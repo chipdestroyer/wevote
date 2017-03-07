@@ -1,0 +1,85 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    app:layout_behavior="@string/appbar_scrolling_view_behavior"
+    tools:context="com.example.gusta.madrugada.MainActivity"
+    tools:showIn="@layout/activity_main">
+
+    <RelativeLayout
+        android:layout_width="wrap_content"
+        android:layout_height="match_parent"
+        android:layout_weight="1"
+        android:paddingLeft="12dp"
+        android:paddingRight="12dp">
+
+        <ImageView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:src="@mipmap/iconee"
+            android:minWidth="150dp"
+            android:minHeight="150dp"
+            android:layout_centerHorizontal="true"
+            />
+        <EditText
+            android:id="@+id/etUsername"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentEnd="true"
+            android:layout_alignParentLeft="true"
+            android:layout_alignParentRight="true"
+            android:layout_alignParentStart="true"
+            android:layout_alignParentTop="true"
+            android:layout_weight="1"
+            android:ems="10"
+            android:hint="Usuario"
+            android:inputType="textPersonName"
+            android:paddingRight="10dp"
+            android:paddingTop="150dp" />
+
+        <EditText
+            android:id="@+id/etSenha"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentEnd="true"
+            android:layout_alignParentLeft="true"
+            android:layout_alignParentRight="true"
+            android:layout_alignParentStart="true"
+            android:layout_below="@+id/etUsername"
+            android:layout_marginTop="40dp"
+            android:layout_weight="1"
+            android:ems="10"
+            android:hint="senha"
+            android:inputType="textPassword" />
+
+        <Button
+            android:id="@+id/btnLogin"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="38dp"
+            android:backgroundTint="#0095c7"
+            android:layout_weight="1"
+            android:text="Login"
+            android:layout_below="@+id/etSenha"
+            android:layout_toRightOf="@+id/btnCadastrar"
+            android:layout_toEndOf="@+id/btnCadastrar"
+            android:layout_marginLeft="26dp"
+            android:layout_marginStart="26dp" />
+
+        <Button
+            android:id="@+id/btnCadastrar"
+            android:backgroundTint="#70b3a1"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignBaseline="@+id/btnLogin"
+            android:layout_alignBottom="@+id/btnLogin"
+            android:layout_alignParentLeft="true"
+            android:layout_alignParentStart="true"
+            android:layout_marginLeft="58dp"
+            android:layout_marginStart="58dp"
+            android:text="Cadastrar" />
+    </RelativeLayout>
+
+</LinearLayout>
