@@ -1,108 +1,140 @@
 package com.example.gusta.madrugada;
 
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Bundle;
+import android.provider.Settings;
+import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
-import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
-import android.widget.Toast;
 
-import com.kosalgeek.asynctask.AsyncResponse;
-import com.kosalgeek.asynctask.PostResponseAsyncTask;
+import com.fasterxml.jackson.databind.ObjectMapper;
 
-import java.util.HashMap;
+import java.io.IOException;
 
-public class MainActivity extends AppCompatActivity implements AsyncResponse, View.OnClickListener {
+import okhttp3.FormBody;
+import okhttp3.OkHttpClient;
+import okhttp3.Request;
+import okhttp3.RequestBody;
+import okhttp3.Response;
 
-    EditText etUsername, etSenha;
-    Button btnLogin, btnCadastrar ;
+public class MainActivity extends AppCompatActivity {
+
+    private OkHttpClient client = new OkHttpClient();
+    private static Usuario usuario = null;
+    private EditText etUsername, etSenha;
+    private Button btnLogin, btnCadastrar;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+        final ObjectMapper objMp = new ObjectMapper();
+        final String android_id = Settings.Secure.getString(this.getContentResolver(),
+                Settings.Secure.ANDROID_ID).toUpperCase();
 
-        etUsername = (EditText) findViewById(R.id.etUsername);
-        etSenha = (EditText) findViewById(R.id.etSenha);
-        btnLogin = (Button) findViewById(R.id.btnLogin);
-        btnLogin.setOnClickListener(new View.OnClickListener() {
+        RequestBody formBody = new FormBody.Builder()
+                .add("idAndroid", android_id)
+                .build();
+        final Request rq = new Request.Builder()
+                .url("http://192.168.0.106/login.php")
+                .post(formBody)
+                .build();
+        new Thread(new Runnable() {
             @Override
-            public void onClick(View v) {
-                HashMap postData = new HashMap();
-                postData.put("mobile", "android");
-                postData.put("txtUsername", etUsername.getText().toString());
-                postData.put("txtPassword", etSenha.getText().toString());
-                PostResponseAsyncTask task = new PostResponseAsyncTask(MainActivity.this, postData);
-
+            public void run() {
                 try {
-                    MainActivity.this.processFinish(task.execute("http://192.168.1.140/login.php").get());
-                    //Toast.makeText(MainActivity.this, task.execute("http://192.168.1.140/login.php").getStatus()+"" ,Toast.LENGTH_LONG).show();
+                    // watch cat /var/www/html/cadastrar.php
+                    //
+                    Response res = client.newCall(rq).execute();
+                    if (res.isSuccessful()) {
+                        usuario = objMp.readValue(res.body().string(), Usuario.class);
+                        proxTela();
+                        //TODO: Programar registro com dialog
+                    }
+                } catch (Exception e) {
 
-                    System.out.println(task.get());
+                    final AlertDialog.Builder ad = new AlertDialog.Builder(MainActivity.this);
+                    ad.setMessage("Novo Usuario")
+                            .setCancelable(false)
+                            .setView(R.layout.fragment_dialogo_inscricao);
+                    ad.setPositiveButton("Enviar", new DialogInterface.OnClickListener() {
+                        @Override
+                        public void onClick(DialogInterface dialog, int which) {
+                            EditText cxTxt =
+                                    (EditText) ((AlertDialog) dialog).findViewById(R.id.editText);
+                            if (cxTxt.getText().toString().trim().equals("")) {
+                                return;
+                            }
+                            RequestBody formBody = new FormBody.Builder()
+                                    .add("androidID", android_id)
+                                    .add("mobile", "android")
+                                    .add("name", cxTxt.getText().toString())
+                                    .build();
+                            final Request rq = new Request.Builder()
+                                    .url("http://192.168.0.106/cadastrar.php")
+                                    .post(formBody)
+                                    .build();
+                            Thread t = new Thread(new Runnable() {
+                                @Override
+                                public void run() {
+                                    try {
+                                        Response r = client.newCall(rq).execute();
+                                        String j = r.body().string();
+                                        usuario = objMp.readValue(j, Usuario.class);
+                                    } catch (IOException e) {
+                                        e.printStackTrace();
+                                    }
+                                }
+                            });
+                            t.start();
+                            try {
+                                t.join();
+                            } catch (InterruptedException u) {
+                                u.printStackTrace();
+                            }
 
-                }catch(Exception e){
-                    e.printStackTrace();
+
+                        }
+                    });
+                    ad.setOnDismissListener(new DialogInterface.OnDismissListener() {
+                        @Override
+                        public void onDismiss(DialogInterface dialog) {
+                            if (usuario == null) {
+                                MainActivity.this.runOnUiThread(new Runnable() {
+                                    @Override
+                                    public void run() {
+                                        ad.setMessage("Nome não pode ser vazio");
+                                        final AlertDialog dialog = ad.create();
+                                        dialog.show();
+                                    }
+                                });
+                            } else {
+                                proxTela();
+                            }
+                        }
+                    });
+                    MainActivity.this.runOnUiThread(new Runnable() {
+                        @Override
+                        public void run() {
+                            final AlertDialog dialog = ad.create();
+                            dialog.show();
+                        }
+                    });
                 }
-
-
             }
-        });
-        btnCadastrar = (Button) findViewById(R.id.btnCadastrar);
-        btnCadastrar.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                HashMap postData = new HashMap();
-                postData.put("mobile", "android");
-                postData.put("txtUsername", etUsername.getText().toString());
-                postData.put("txtPassword", etSenha.getText().toString());
-                PostResponseAsyncTask task = new PostResponseAsyncTask(MainActivity.this, postData);
-                if (!etSenha.getText().toString().trim().equals(""))
-                    task.execute("http://192.168.1.140/cadastrar.php");
-            }
-        });
-        /*     etUsername = (EditText) findViewById(R.id.etUsername);
-        etSenha = (EditText) findViewById(R.id.etSenha);
-        btnLogin = (Button) findViewById(R.id.btnLogin);
-        btnLogin.setOnClickListener(this);
-        btnCadastrar = (Button) findViewById(R.id.btnCadastrar);
-        btnCadastrar.setOnClickListener(this);*/
-}
+        }).start();
 
-    @Override
-    public void processFinish(String result) {
-    if(result.equals("success")){
-        Intent in =  new Intent(this, SubActivity.class);
-        startActivity(in);
-    }
-    else
-    {
-        Toast.makeText(this, "failed" , Toast.LENGTH_LONG).show();
-    }
-}
-    @Override
-    public void onClick(View v) {
-        String btnID = v.getResources().getResourceName(v.getId());
-
-
-        HashMap postData = new HashMap();
-        postData.put("mobile", "android");
-        postData.put("txtUsername", etUsername.getText().toString());
-        postData.put("txtPassword", etSenha.getText().toString());
-        PostResponseAsyncTask task = new PostResponseAsyncTask(this, postData);
-        if(btnID =="com.example.gusta.madrugada:id/btnLogin") {
-            task.execute("http://192.168.1.140/login.php");
-        }else {
-            task.execute("http://192.168.1.140/cadastrar.php");
-        }
     }
 
-    //public void cadastrar(View v){
-        //HashMap postData = new HashMap();
-       // postData.put("mobile", "android");
-        //postData.put("txtUsername", etUsername.getText().toString());
-        //postData.put("txtPassword", etSenha.getText().toString());
-        //PostResponseAsyncTask task = new PostResponseAsyncTask(this, postData);
-        //task.execute("http://192.168.1.55/cadastrar.php");
-   // }
+    public void proxTela() {
+        Intent i = new Intent(this, ListaProjetos.class);
+        startActivity(i);
+        finish();
+    }
+
+    public static Usuario getUsuario() {
+        return usuario;
+    }
 }
