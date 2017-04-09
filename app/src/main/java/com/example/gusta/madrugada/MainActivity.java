@@ -38,7 +38,7 @@ public class MainActivity extends AppCompatActivity {
                 .add("idAndroid", android_id)
                 .build();
         final Request rq = new Request.Builder()
-                .url("http://192.168.0.106/login.php")
+                .url("http://192.168.0.140/login.php")
                 .post(formBody)
                 .build();
         new Thread(new Runnable() {
@@ -73,7 +73,7 @@ public class MainActivity extends AppCompatActivity {
                                     .add("name", cxTxt.getText().toString())
                                     .build();
                             final Request rq = new Request.Builder()
-                                    .url("http://192.168.0.106/cadastrar.php")
+                                    .url("http://192.168.0.140/cadastrar.php")
                                     .post(formBody)
                                     .build();
                             Thread t = new Thread(new Runnable() {
